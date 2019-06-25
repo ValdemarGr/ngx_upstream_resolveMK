@@ -174,20 +174,15 @@ static ngx_int_t ngx_http_upstream_resolveMK_get_peer(ngx_peer_connection_t *pc,
 	pc->connection = NULL;
 
 	if (urcf->resolver_stats == RESOLVE_STATS_WAIT) {
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0, "upstream_resolveMK: resolving");
 		goto assign;
 	}
 
 	if (ngx_time() <= urcf->resolved_access + urcf->resolver_interval) {
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-			       "upstream_resolveMK: update from DNS cache");
 		goto assign;
 	}
 	ctx = ngx_resolve_start(urpd->clcf->resolver, NULL);
 
 	if (ctx == NULL) {
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-		               "upstream_resolveMK: resolve_start fail");
 		goto assign;
 	}
 
@@ -196,8 +191,6 @@ static ngx_int_t ngx_http_upstream_resolveMK_get_peer(ngx_peer_connection_t *pc,
 		goto assign;
 	}
 
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-	               "upstream_resolveMK: resolve_start ok");
 	ctx->name = urcf->resolver_domain;
 	ctx->service = urcf->resolver_service;
 	ctx->handler = ngx_http_upstream_resolveMK_handler;
@@ -211,8 +204,6 @@ static ngx_int_t ngx_http_upstream_resolveMK_get_peer(ngx_peer_connection_t *pc,
 	}
 
 assign:
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-	               "upstream_resolveMK: resolved_num=%ud", urcf->resolved_num);
 
 	if (urpd->current == -1) {
 		urcf->resolved_index = (urcf->resolved_index + 1) % urcf->resolved_num;
@@ -225,10 +216,6 @@ assign:
 	pc->sockaddr = &peer->sockaddr;
 	pc->socklen = peer->socklen;
 	pc->name = &peer->name;
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-	               "upstream_resolveMK: upstream to DNS peer (%s:%ud)",
-	               inet_ntoa(((struct sockaddr_in*)(pc->sockaddr))->sin_addr),
-	               ntohs((unsigned short)((struct sockaddr_in*)(pc->sockaddr))->sin_port));
 
 	return NGX_OK;
 }
@@ -416,10 +403,6 @@ ngx_http_upstream_resolveMK_handler(ngx_resolver_ctx_t *ctx)
 
 	r = ctx->resolver;
 	urcf = (ngx_http_upstream_resolveMK_srv_conf_t *)ctx->data;
-	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->log, 0,
-	               "upstream_resolveMK: \"%V\" resolved state(%i: %s)",
-	               &ctx->name, ctx->state,
-	               ngx_resolver_strerror(ctx->state));
 
 	if (ctx->state || ctx->naddrs == 0) {
 		ngx_log_error(NGX_LOG_ERR, r->log, 0,
@@ -494,16 +477,11 @@ ngx_http_upstream_save_resolveMK_peer_session(ngx_peer_connection_t *pc,
 		return;
 	}
 
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-	               "save session: %p:%d", ssl_session, ssl_session->references);
 	peer = &urpd->conf->peers[urpd->current];
 	old_ssl_session = peer->ssl_session;
 	peer->ssl_session = ssl_session;
 
 	if (old_ssl_session) {
-		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-		               "old session: %p:%d",
-		               old_ssl_session, old_ssl_session->references);
 		ngx_ssl_free_session(old_ssl_session);
 	}
 }
