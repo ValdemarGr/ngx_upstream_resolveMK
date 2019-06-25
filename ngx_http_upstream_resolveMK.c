@@ -476,9 +476,6 @@ ngx_http_upstream_set_resolveMK_peer_session(ngx_peer_connection_t *pc,
 	peer = &urpd->conf->peers[urpd->current];
 	ssl_session = peer->ssl_session;
 	rc = ngx_ssl_set_session(pc->connection, ssl_session);
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, pc->log, 0,
-	               "set session: %p:%d",
-	               ssl_session, ssl_session ? ssl_session->references : 0);
 	return rc;
 }
 
